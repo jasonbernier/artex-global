@@ -30,6 +30,10 @@ RUN npm install -g @playwright/mcp@latest @playwright/cli@latest playwright@late
     && playwright install --with-deps chromium \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
+# Optional subscription provider. Pin a CLI version when building an image that
+# needs it; the default image stays unchanged. Sign in at runtime, never at build.
+ARG CODEX_CLI_VERSION=
+RUN if [ -n "$CODEX_CLI_VERSION" ]; then npm install -g "@openai/codex@$CODEX_CLI_VERSION"; fi
 # 미리 컴파일한 해당 아키텍처 바이너리(dist/amd64/artex 또는 dist/arm64/artex)
 COPY dist/${TARGETARCH}/artex /app/artex
 # 감시 기동 스크립트: 프로세스 종료 후 종료 코드에 따라 다시 띄울지 결정하며, 화면의 원클릭 업데이트가 이 스크립트로 교체를 완료한다.

@@ -3413,6 +3413,11 @@
         "savedActive": "保存しました。有効な設定は即座に適用され、再起動は不要です",
         "saved": "保存しました",
         "saveFailed": "保存に失敗しました: {msg}"
+      },
+      "codex": {
+        "hint": "ARTEXを実行するアカウントのCodex CLIログインを使用します。APIキーは不要です。先にcodex loginを実行してください。応答は完了後に表示され、出力トークン上限とHTTP設定は適用されません。サブスクリプションの使用量制限は引き続き適用されます。",
+        "modelPlaceholder": "空欄の場合はCodexの既定モデルを使用",
+        "outputLimitHint": "出力上限はCodex CLIが管理するため、この設定は適用されません。"
       }
     },
     "retryLayer": {

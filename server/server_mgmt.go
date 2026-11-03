@@ -1879,6 +1879,10 @@ func (s *Server) pgSaveProfile(w http.ResponseWriter, r *http.Request) {
 	p := body.LLMProfile
 	p.APIKey = body.APIKey
 	p.Streaming = body.Streaming == nil || *body.Streaming
+	if p.Format == "codex-cli" {
+		p.APIKey, p.BaseURL, p.Proxy, p.SessionHeaderKey, p.ThinkingType = "", "", "", "", ""
+		p.MaxTokens = 0 // The CLI owns its output budget.
+	}
 	// 输出上限:负数无意义,归零(= 不发送该字段)。字段名开关只有 Chat Completions
 	// 用得上——anthropic 与 openai-responses 各自定死了字段名,存下来只会误导后续读者,
 	// 故非 openai 格式一律清空。未知取值同样清空,避免把 DB CHECK 的报错甩给用户。
@@ -2056,6 +2060,10 @@ func (s *Server) pgListModels(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := decode(r, &req); err != nil {
 		writeErr(w, 400, err.Error())
+		return
+	}
+	if req.Provider == "codex-cli" {
+		writeJSON(w, 200, map[string]any{"ok": false, "error": "Codex CLI does not expose the HTTP model list; enter a model ID or leave it blank for the CLI default"})
 		return
 	}
 	// Resolve API key: form input > profile stored key.
