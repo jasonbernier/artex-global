@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Autumn-27/artex/codexcli"
 	"github.com/Autumn-27/artex/llmrec"
 	"github.com/Autumn-27/norma/agentcore"
 	"github.com/Autumn-27/norma/compaction"
@@ -137,7 +138,7 @@ func compactionConfig(windowTokens int) *compaction.Config {
 
 // FromEnv resolves the LLM provider config:
 //
-//	ARTEX_LLM_PROVIDER = anthropic|openai (default: inferred from keys)
+//	ARTEX_LLM_PROVIDER = anthropic|openai|openai-responses|codex-cli
 //	ARTEX_LLM_MODEL    = model id        (default: per provider)
 //	ARTEX_LLM_BASE_URL = endpoint        (optional)
 //	ARTEX_LLM_PROXY    = proxy URL        (optional; http/https/socks5)
@@ -166,6 +167,8 @@ func FromEnv() (Config, bool) {
 		Stream: !isFalsy(os.Getenv("ARTEX_LLM_STREAM")),
 	}
 	switch prov {
+	case "codex-cli":
+		c.Format = codexcli.Format
 	case "openai":
 		c.Format = llm.FormatOpenAI
 		c.APIKey = oaiKey
@@ -185,7 +188,7 @@ func FromEnv() (Config, bool) {
 			c.Model = "claude-opus-4-8"
 		}
 	}
-	if c.APIKey == "" {
+	if !c.Configured() {
 		return Config{}, false
 	}
 	return c, true
@@ -204,6 +207,9 @@ func ConfigFrom(provider, model, baseURL, apiKey, proxy string) Config {
 		Stream:  true, // 默认流式;调用方按 profile 覆盖
 	}
 	switch strings.TrimSpace(provider) {
+	case "codex-cli":
+		c.Format = codexcli.Format
+		c.APIKey, c.BaseURL, c.Proxy = "", "", ""
 	case "openai":
 		c.Format = llm.FormatOpenAI
 		// provider appends "/chat/completions"; tolerate a full endpoint URL.
@@ -242,6 +248,8 @@ func isFalsy(s string) bool {
 // Provider returns the short provider name ("anthropic"/"openai").
 func (c Config) Provider() string {
 	switch c.Format {
+	case codexcli.Format:
+		return string(codexcli.Format)
 	case llm.FormatOpenAI:
 		return "openai"
 	case llm.FormatOpenAIResponses:
@@ -250,10 +258,31 @@ func (c Config) Provider() string {
 	return "anthropic"
 }
 
+// Configured checks credentials without invoking a model. CLI authentication is
+// owned by Codex; the connection test verifies the service account's sign-in.
+func (c Config) Configured() bool {
+	return c.Format == codexcli.Format || c.APIKey != ""
+}
+
 // NewProvider builds an llm.Provider from the config. When a rate is set, the
 // limiter lives on the single provider instance — so planner + all workers +
 // main agent (which share this provider) are bounded by one shared rate limit.
 func (c Config) NewProvider() (llm.Provider, error) {
+	if c.Format == codexcli.Format {
+		timeout := 5 * time.Minute
+		if raw := os.Getenv("ARTEX_CODEX_TIMEOUT"); raw != "" {
+			var err error
+			timeout, err = time.ParseDuration(raw)
+			if err != nil || timeout <= 0 {
+				return nil, fmt.Errorf("codex-cli: ARTEX_CODEX_TIMEOUT must be a positive duration (for example 5m)")
+			}
+		}
+		return codexcli.New(codexcli.Config{
+			Binary: os.Getenv("ARTEX_CODEX_BIN"), Model: c.Model,
+			ReasoningEffort: c.ReasoningEffort, Timeout: timeout,
+			RatePerSecond: c.RatePerSecond, RatePerMinute: c.RatePerMinute,
+		})
+	}
 	client, err := quotaAwareHTTPClient(c.Proxy, c.SessionHeaderKey)
 	if err != nil {
 		return nil, err

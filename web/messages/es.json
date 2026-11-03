@@ -3413,6 +3413,11 @@
         "savedActive": "Guardado. El perfil activo se aplica de inmediato, sin necesidad de reiniciar",
         "saved": "Guardado",
         "saveFailed": "Error al guardar: {msg}"
+      },
+      "codex": {
+        "hint": "Usa la sesión de Codex CLI de la cuenta que ejecuta ARTEX. No necesita una clave API. Ejecuta codex login primero. Las respuestas se muestran completas; los límites de tokens de salida y los ajustes HTTP no se aplican. Siguen vigentes los límites de la suscripción.",
+        "modelPlaceholder": "Déjalo vacío para usar el modelo predeterminado de Codex",
+        "outputLimitHint": "Codex CLI gestiona el límite de salida; este ajuste no se aplica."
       }
     },
     "retryLayer": {

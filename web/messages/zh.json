@@ -3413,6 +3413,11 @@
         "savedActive": "已保存，激活配置即时生效，无需重启",
         "saved": "已保存",
         "saveFailed": "保存失败：{msg}"
+      },
+      "codex": {
+        "hint": "使用运行 ARTEX 的账户已登录的 Codex CLI。无需 API 密钥。请先运行 codex login。回复完成后才会显示；输出令牌上限和 HTTP 设置不适用。订阅的使用量限制仍然适用。",
+        "modelPlaceholder": "留空以使用 Codex 默认模型",
+        "outputLimitHint": "输出上限由 Codex CLI 管理，此设置不适用。"
       }
     },
     "retryLayer": {

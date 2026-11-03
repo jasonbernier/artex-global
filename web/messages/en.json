@@ -3413,6 +3413,11 @@
         "savedActive": "Saved. The active profile applies immediately, no restart needed",
         "saved": "Saved",
         "saveFailed": "Save failed: {msg}"
+      },
+      "codex": {
+        "hint": "Uses the Codex CLI sign-in of the account running ARTEX. No API key is needed. Run codex login first. Replies are buffered; output-token limits and HTTP settings do not apply. Subscription usage limits still apply.",
+        "modelPlaceholder": "Leave blank for the Codex default model",
+        "outputLimitHint": "The Codex CLI manages its output limit; this setting does not apply."
       }
     },
     "retryLayer": {

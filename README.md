@@ -125,6 +125,8 @@ Upstream provides several methods: an install script (`./install.sh`), precompil
 
 ## Configuration
 
+**Codex subscription:** select **Codex CLI (ChatGPT)** in an LLM profile, or set `ARTEX_LLM_PROVIDER=codex-cli`. This uses the existing Codex CLI ChatGPT sign-in of the account running ARTEX, without an API key. See [setup, Docker requirements and limitations](docs/codex-cli.md).
+
 **Database** (`config.json`, or override with the `ARTEX_PG_DSN` environment variable):
 
 ```json
